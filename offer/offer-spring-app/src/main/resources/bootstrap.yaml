@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: offer-app
+
+spring.sleuth:
+  propagation-keys: ${COMMON_HEADERS}
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  topic:
+    offer-events: ${KAFKA_TOPIC_OFFER}

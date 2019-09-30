@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: istio-system
+spec:
+  type: ExternalName
+  externalName: ext-keycloak.infrastructure.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ext-keycloak
+  namespace: infrastructure
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ext-keycloak
+  namespace: infrastructure
+subsets:
+  - addresses:
+      - ip: 192.168.99.1
+    ports:
+      - port: 8080
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-config
+  namespace: app
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "10.0.2.2:9092"
+  KAFKA_TOPIC_PRODUCT: "product-messages"
+  KAFKA_TOPIC_PRODUCT_ERROR: "product-error-messages"
+  KAFKA_TOPIC_INSTALMENT: "instalment-events"
+  KAFKA_TOPIC_INSTALMENT_ERROR: "instalment-error-events"
+  KAFKA_TOPIC_OFFER: "offer-messages"
+  KAFKA_TOPIC_LOAN: "loan-messages"
+  KAFKA_TOPIC_LOAN_ERROR: "loan-error-messages"
+  COMMON_HEADERS: "x-user-desc"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: offer-app
+  namespace: app
+  labels:
+    app: offer-app
+spec:
+  ports:
+    - port: 8076
+      name: http
+      protocol: TCP
+  selector:
+    app: offer-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: offer-frontend
+  namespace: app
+  labels:
+    app: offer-frontend
+spec:
+  ports:
+    - port: 7001
+      name: http
+      protocol: TCP
+  selector:
+    app: offer-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-app
+  namespace: app
+  labels:
+    app: user-app
+spec:
+  ports:
+    - targetPort: 8073
+      port: 80
+      name: http
+      protocol: TCP
+  selector:
+    app: user-app

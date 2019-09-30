@@ -1,0 +1,87 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: api-gateway
+  namespace: app
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gateway-offer
+  namespace: app
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - api-gateway
+  http:
+    - match:
+      - uri:
+          prefix: /offer/
+      route:
+      - destination:
+          host: offer-app
+          port:
+            number: 8076
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gateway-offer-frontend
+  namespace: app
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /offer-frontend/
+      route:
+        - destination:
+            host: offer-frontend
+            port:
+              number: 7001
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: gateway-user
+  namespace: app
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /user/
+      route:
+        - destination:
+            host: user-app
+            port:
+              number: 80
+---
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: auth-headers
+  namespace: istio-system
+spec:
+  match: match(destination.service.host, "*.app.svc.cluster.local")
+  request_header_operations:
+    - name: x-user-desc
+      values:
+        - request.auth.claims["name"] + " (logged as " + request.auth.claims["preferred_username"] + ")"

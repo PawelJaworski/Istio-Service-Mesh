@@ -1,0 +1,62 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: user-app-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-app
+        version: v1
+    spec:
+      containers:
+        - name: user-app
+          image: javorex/user-micronaut-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8073
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: offer-frontend-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: offer-frontend
+        version: v1
+    spec:
+      containers:
+        - name: offer-frontend
+          image: javorex/offer-frontend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7001
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: offer-app-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: offer-app
+        version: v1
+    spec:
+      containers:
+        - name: offer-app
+          image: javorex/offer-spring-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8076
+          envFrom:
+            - configMapRef:
+                name: service-config
