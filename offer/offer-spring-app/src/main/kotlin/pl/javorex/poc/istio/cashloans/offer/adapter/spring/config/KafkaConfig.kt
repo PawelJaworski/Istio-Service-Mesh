@@ -8,5 +8,5 @@ import org.springframework.stereotype.Component
 @Component
 class KafkaConfig(
         @Value("\${kafka.bootstrap-servers}") val bootstrapServers: String,
-        @Value("\${kafka.topic.offer-events}") val offerTopic: String
+        @Value("\${kafka.topic.offer-messages}") val offerTopic: String
 )

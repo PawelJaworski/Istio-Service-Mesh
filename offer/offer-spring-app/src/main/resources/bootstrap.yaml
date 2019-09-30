@@ -8,4 +8,4 @@ spring.sleuth:
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   topic:
-    offer-events: ${KAFKA_TOPIC_OFFER}
+    offer-messages: ${KAFKA_TOPIC_OFFER}
