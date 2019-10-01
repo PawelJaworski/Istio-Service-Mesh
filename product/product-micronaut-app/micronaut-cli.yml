@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: pl.javorex.poc.istio.cashloans.product
+---
+testFramework: junit
+sourceLanguage: java

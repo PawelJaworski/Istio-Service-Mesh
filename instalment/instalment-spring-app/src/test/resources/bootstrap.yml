@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: instalment-app
+  cloud:
+    discovery:
+      enabled: false
+    consul:
+      enabled: false
+
+integration:
+  url:
+    product: http://localhost:8001

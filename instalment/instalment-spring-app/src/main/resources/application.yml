@@ -1,0 +1,13 @@
+server:
+  port: 8077
+
+spring:
+  application:
+    name: instalment-app
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  topic:
+    loan-events: ${KAFKA_TOPIC_LOAN}
+    instalment-events: ${KAFKA_TOPIC_INSTALMENT}
+    instalment-error-events: ${KAFKA_TOPIC_INSTALMENT_ERROR}
