@@ -89,3 +89,50 @@ spec:
       protocol: TCP
   selector:
     app: user-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: instalment-app
+  namespace: app
+  labels:
+    app: instalment-app
+spec:
+  ports:
+    - targetPort: 8077
+      port: 80
+      name: http
+      protocol: TCP
+  selector:
+    app: instalment-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-app
+  namespace: app
+  labels:
+    app: loan-app
+spec:
+  ports:
+    - targetPort: 8078
+      port: 80
+      name: http
+      protocol: TCP
+  selector:
+    app: loan-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-frontend
+  namespace: app
+  labels:
+    app: loan-frontend
+spec:
+  ports:
+    - port: 7010
+      name: http
+      protocol: TCP
+  selector:
+    app: loan-frontend

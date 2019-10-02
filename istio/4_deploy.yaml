@@ -21,26 +21,6 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: offer-frontend-v1
-  namespace: app
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: offer-frontend
-        version: v1
-    spec:
-      containers:
-        - name: offer-frontend
-          image: javorex/offer-frontend
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 7001
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
   name: offer-app-v1
   namespace: app
 spec:
@@ -60,3 +40,89 @@ spec:
           envFrom:
             - configMapRef:
                 name: service-config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: instalment-app-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: instalment-app
+        version: v1
+    spec:
+      containers:
+        - name: instalment-app
+          image: javorex/instalment-spring-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8077
+          envFrom:
+            - configMapRef:
+                name: service-config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: loan-app-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: loan-app
+        version: v1
+    spec:
+      containers:
+        - name: loan-app
+          image: javorex/loan-spring-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8078
+          envFrom:
+            - configMapRef:
+                name: service-config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: loan-frontend-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: loan-frontend
+        version: v1
+    spec:
+      containers:
+        - name: loan-frontend
+          image: javorex/loan-frontend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7010
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: offer-frontend-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: offer-frontend
+        version: v1
+    spec:
+      containers:
+        - name: offer-frontend
+          image: javorex/offer-frontend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7001
