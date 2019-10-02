@@ -3,6 +3,7 @@ eval $(minikube docker-env)
 kubectl apply -f 1_namespaces.yaml --force
 kubectl replace -f 2_services.yaml --force
 kubectl replace -f 3_routing.yaml --force
+kubectl replace -f 4_authorization.yaml --force
 
 kubectl label namespace app istio-injection=enabled --overwrite
 
@@ -15,4 +16,4 @@ mvn clean install dockerfile:build -Pdocker -f ../loan/loan-spring-app/pom.xml
 docker build -t javorex/offer-frontend ../offer/offer-frontend/
 docker build -t javorex/loan-frontend ../loan/loan-frontend/
 
-kubectl replace -f 4_deploy.yaml --force
+kubectl replace -f 5_deploy.yaml --force

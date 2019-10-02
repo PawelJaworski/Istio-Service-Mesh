@@ -70,7 +70,7 @@ export const OfferForm = (props: OfferCriteriaProps) => {
             <div className={rowCss}>
                 <form>
                     <ReadOnly label="Loan Product" id="loanProduct" value="BESTSELLING_LOAN"/>
-                    <NumberInput label="Number of instalment per year" id="numberOfInstalment" placeholder="1, 2, 6 or 12"
+                    <NumberInput label="Number of instalment per year" id="numberOfInstalment" placeholder="2, 6 or 12"
                                  onChange={onNumberOfInstalmentChange}/>
                 </form>
             </div>

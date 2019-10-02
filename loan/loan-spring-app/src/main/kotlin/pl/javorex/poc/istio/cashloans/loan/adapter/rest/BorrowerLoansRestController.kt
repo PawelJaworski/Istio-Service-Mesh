@@ -6,7 +6,7 @@ import pl.javorex.poc.istio.cashloans.loan.application.LoanQueryFacade
 import pl.javorex.poc.istio.cashloans.loan.domain.projection.BorrowerLoans
 
 @RestController
-@RequestMapping("/borrowerLoans")
+@RequestMapping("/borrowerLoan")
 class BorrowerLoansRestController(
     private val loanQueryFacade: LoanQueryFacade
 ) {

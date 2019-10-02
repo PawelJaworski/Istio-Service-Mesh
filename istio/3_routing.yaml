@@ -74,7 +74,6 @@ spec:
             port:
               number: 80
 ---
----
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -88,7 +87,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /borrowerLoans/
+            prefix: /borrowerLoan/
         - uri:
             prefix: /loan/
       route:

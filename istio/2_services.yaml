@@ -136,3 +136,19 @@ spec:
       protocol: TCP
   selector:
     app: loan-frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-app
+  namespace: app
+  labels:
+    app: product-app
+spec:
+  ports:
+    - targetPort: 8075
+      port: 80
+      name: http
+      protocol: TCP
+  selector:
+    app: product-app

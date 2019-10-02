@@ -52,12 +52,10 @@ export const ReadOnly = (props) => {
         <React.Fragment>
             <div className="form-group">
                 <label htmlFor={id}>{label}</label>
-                <input type="text"
-                       className="form-control"
-                       id={id}
-                       value={value}
-                       readOnly
-                />
+                <span className="form-control"
+                      id={id}>
+                    {value}
+                </span>
             </div>
         </React.Fragment>
     )

@@ -126,3 +126,26 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 7001
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: product-app-v1
+  namespace: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: product-app
+        version: v1
+    spec:
+      containers:
+        - name: product-app
+          image: javorex/product-micronaut-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8075
+          envFrom:
+            - configMapRef:
+                name: service-config
