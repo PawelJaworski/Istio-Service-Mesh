@@ -66,8 +66,8 @@ class SagaStep(private val saga: AsyncMessagesSaga) {
     private val async = AsyncMessagesBuilder()
     private var heartBeatInterval =
         HeartBeatInterval.ofSeconds(5)
-    private lateinit var onComplete: AsyncMessageCallback
-    private lateinit var sources: Array<out String>
+    private lateinit var _onComplete: AsyncMessageCallback
+    private lateinit var _sources: Array<out String>
 
     fun processorName() = processorName
 
@@ -93,12 +93,12 @@ class SagaStep(private val saga: AsyncMessagesSaga) {
     }
 
     fun onComplete(onComplete: AsyncMessageCallback): SagaStep {
-        this.onComplete = onComplete
+        this._onComplete = onComplete
         return this
     }
 
     fun sources(vararg sources: String): SagaStep {
-        this.sources = sources
+        this._sources = sources
         return this
     }
 
@@ -119,12 +119,12 @@ class SagaStep(private val saga: AsyncMessagesSaga) {
                         { async.build() },
                         heartBeatInterval,
                         storeName,
-                        onComplete,
+                        _onComplete,
                         saga.sink(),
                         saga.errSink()
                     )
                 },
-                *sources
+                *_sources
         )
         kStreamTopology.addStateStore(storeBuilder, processorName)
     }

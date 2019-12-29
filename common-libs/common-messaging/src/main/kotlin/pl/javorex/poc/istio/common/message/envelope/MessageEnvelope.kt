@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
+import java.time.Instant
+import java.time.LocalDateTime
+import java.util.*
 
 data class MessageEnvelope(
     val sourceId: String = "",
@@ -19,6 +22,9 @@ data class MessageEnvelope(
     fun <T>unpack(clazz: Class<T>): T = newObjectMapper().treeToValue(payload, clazz)
     fun isVersionOf(sourceId: String, sourceVersion: Long) =
         this.sourceId == sourceId && this.sourceVersion == sourceVersion
+
+    fun asString() = "{$sourceId, $sourceVersion, $payload,${LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), TimeZone
+            .getDefault().toZoneId())}}"
 }
 
 fun pack(sourceId: String, sourceVersion: Long, message: Any): MessageEnvelope {

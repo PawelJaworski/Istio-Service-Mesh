@@ -115,6 +115,9 @@
 					</execution>
 				</executions>
                 <configuration>
+					<args>
+						<arg>-Xjvm-default=enable</arg>
+					</args>
                     <jvmTarget>1.8</jvmTarget>
                 </configuration>
             </plugin>

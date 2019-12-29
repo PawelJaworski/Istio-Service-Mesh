@@ -19,8 +19,9 @@ class AsyncMessagesProcessor(
 ) : Processor<String, MessageEnvelope> {
     private lateinit var store: KeyValueStore<String, CurrentMessages>
     private lateinit var messageBus: ProcessorMessageBus
-
+    private lateinit var context: ProcessorContext
     override fun init(context: ProcessorContext) {
+        this.context = context
         store = context
                 .getStateStore(storeName) as KeyValueStore<String, CurrentMessages>
         messageBus =
@@ -106,6 +107,7 @@ class AsyncMessagesProcessor(
 
 class HeartBeatInterval(val duration: Duration) {
     companion object {
+        @JvmStatic
         fun ofSeconds(sec: Long) : HeartBeatInterval {
             val duration = Duration.ofSeconds(sec)
 

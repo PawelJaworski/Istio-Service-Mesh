@@ -2,6 +2,7 @@ package pl.javorex.poc.istio.common.kafka.streams
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
@@ -29,6 +30,7 @@ class JsonPOJOSerializer<T> : Serializer<T> {
             .registerModule(Jdk8Module())
             .registerModule(JavaTimeModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
             .writerWithDefaultPrettyPrinter()
 
     override fun configure(props: Map<String, *>, isKey: Boolean) {}
@@ -54,6 +56,7 @@ class JsonPOJODeserializer<T>(private val tClass: Class<T>) : Deserializer<T> {
             .registerModule(Jdk8Module())
             .registerModule(JavaTimeModule())
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 
     override fun configure(props: Map<String, *>, isKey: Boolean) {}
 
