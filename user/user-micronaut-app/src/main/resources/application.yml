@@ -1,5 +1,0 @@
-micronaut:
-  application:
-    name: user-micronaut-app
-  server:
-    port: 8073

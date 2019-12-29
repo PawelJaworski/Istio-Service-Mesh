@@ -1,8 +1,0 @@
-{
-  "realm": "istio",
-  "auth-server-url": "/auth",
-  "ssl-required": "external",
-  "resource": "istio-client",
-  "public-client": true,
-  "confidential-port": 0
-}

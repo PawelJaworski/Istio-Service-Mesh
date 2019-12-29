@@ -22,14 +22,14 @@ class ProcessorMessageBus(
         emitError(message.sourceId, message.sourceVersion, processFailure)
     }
 
-    override fun emitError(sourceId: String, sourceVersion: Long, message: Any) {
-        val messageEnvelope = pack(sourceId, sourceVersion, message)
-        context.forward(sourceId, messageEnvelope, To.child(errorSinkName))
+    override fun emitError(messageKey: String, transactionId: Long, message: Any) {
+        val messageEnvelope = pack(messageKey, transactionId, message)
+        context.forward(messageKey, messageEnvelope, To.child(errorSinkName))
     }
 
-    override fun emit(sourceId: String, sourceVersion: Long, message: Any) {
-        val messageEnvelope = pack(sourceId, sourceVersion, message)
-        context.forward(sourceId, messageEnvelope, To.child(sinkName))}
+    override fun emit(messageKey: String, transactionId: Long, message: Any) {
+        val messageEnvelope = pack(messageKey, transactionId, message)
+        context.forward(messageKey, messageEnvelope, To.child(sinkName))}
 
 }
 
