@@ -24,7 +24,7 @@ data class AsyncMessagesTemplate(
         val sourceVersion = message.sourceVersion
 
         when {
-            !messages.expects(messageType) && !messages.expectsError(messageType) ->
+            !messages.expects(messageType) ->
                 return
             messages.isVersionDiffers(sourceVersion) -> {
                 putError(sourceId, sourceVersion,
@@ -38,15 +38,12 @@ data class AsyncMessagesTemplate(
                 putError(sourceId, sourceVersion, DoubleMessage(messageType))
             messages.expects(messageType) ->
                 messages.collect(message)
-            messages.expectsError(messageType) ->
-                putError(message)
         }
     }
 
     fun expects(messageType: String) =
         messages.starting.containsKey(messageType)
                 || messages.required.containsKey(messageType)
-                || messages.expectedErrors.contains(messageType)
 
     fun messages() = messages
 
@@ -56,6 +53,8 @@ data class AsyncMessagesTemplate(
             messages.isStarted() && messages.startedTimestamp + timeout < timestamp
 
     fun isExpired(timestamp: Long) = messages.creationTimestamp + 2 * timeout < timestamp
+
+    fun isStarted() = messages.isStarted()
 
     fun isComplete() = messages.containsAllRequired()
 
@@ -86,7 +85,6 @@ fun messagesOf(otherMessages: CurrentMessages) : CurrentMessages {
     val messages = CurrentMessages()
     messages.starting.putAll(otherMessages.starting)
     messages.required.putAll(otherMessages.required)
-    messages.expectedErrors.addAll(otherMessages.expectedErrors)
 
     return messages
 }
@@ -96,8 +94,6 @@ data class CurrentMessages(
     internal val starting: HashMap<String, MessageEnvelope?> = hashMapOf(),
     @PublishedApi
     internal val required: HashMap<String, MessageEnvelope?> = hashMapOf(),
-    @PublishedApi
-    internal val expectedErrors: HashSet<String> = hashSetOf(),
     @PublishedApi
     internal val creationTimestamp: Long = System.currentTimeMillis(),
     @PublishedApi
@@ -140,8 +136,6 @@ data class CurrentMessages(
 
     internal fun expects(messageType: String) = starting.contains(messageType)
             || required.contains(messageType)
-
-    internal fun expectsError(messageType: String) = expectedErrors.contains(messageType)
 
     internal fun alreadyContains(messageType: String) =
             starting[messageType] != LACK_OF_MESSAGE || required[messageType] != LACK_OF_MESSAGE

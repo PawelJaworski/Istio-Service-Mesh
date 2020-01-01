@@ -15,7 +15,8 @@ class AsyncMessagesProcessor(
     private val storeName: String,
     private val messageCallback: AsyncMessageCallback,
     private val sinkType: String,
-    private val errorSinkType: String
+    private val errorSinkType: String,
+    private val errorTopic: String
 ) : Processor<String, MessageEnvelope> {
     private lateinit var store: KeyValueStore<String, CurrentMessages>
     private lateinit var messageBus: ProcessorMessageBus
@@ -46,6 +47,13 @@ class AsyncMessagesProcessor(
         val sourceId = message.sourceId
         val messages = store.get(sourceId) ?: templateSupplier().messages()
         val messaging = templateSupplier().updateMessages(messages)
+
+        if (messaging.isStarted() && context.topic() == errorTopic) {
+            messageCallback.onError(message, messageBus)
+            deleteFromStore(sourceId)
+            return
+        }
+
         if (!messaging.expects(message.messageType)) {
             return
         }

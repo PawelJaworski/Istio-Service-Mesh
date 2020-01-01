@@ -18,13 +18,9 @@ class AsyncMessagesBuilder {
 
         return this
     }
+
     fun requires(clazz: Class<*>): AsyncMessagesBuilder {
         messagesPrototype.required[clazz.simpleName] = LACK_OF_MESSAGE
-
-        return this
-    }
-    fun expectErrors(clazz: Class<*>): AsyncMessagesBuilder {
-        messagesPrototype.expectedErrors += clazz.simpleName
 
         return this
     }

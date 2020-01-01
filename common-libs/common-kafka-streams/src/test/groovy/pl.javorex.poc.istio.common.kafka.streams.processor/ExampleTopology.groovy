@@ -1,6 +1,6 @@
 package pl.javorex.poc.istio.common.kafka.streams.processor
 
-
+import groovy.transform.CompileStatic
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
@@ -9,22 +9,24 @@ import org.jetbrains.annotations.NotNull
 import pl.javorex.poc.istio.common.kafka.streams.message.MessageEnvelopeSerde
 import pl.javorex.poc.istio.common.message.MessageBus
 import pl.javorex.poc.istio.common.message.async.CurrentMessages
+import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
 
 import java.time.Duration
 
+@CompileStatic
 class ExampleTopology {
     public static final Properties config = new Properties()
 
     final String topicA
-    final String errorTopicA
     final String topicB
-    final String errorTopicB
     final String topicC
-    final String errorTopicC
+    final String errorTopic
+
     final Topology topology
 
     boolean isBCompleted
+    boolean isBErrorOccurred
     boolean isCCompleted
 
     static {
@@ -36,14 +38,11 @@ class ExampleTopology {
         config[StreamsConfig.RETRY_BACKOFF_MS_CONFIG] = 5000
     }
 
-    ExampleTopology(String topicA, String errorTopicA, String topicB, String errorTopicB, String topicC,
-                      String errorTopicC) {
+    ExampleTopology(String topicA, String topicB, String topicC, String errorTopic) {
         this.topicA = topicA
-        this.errorTopicA = errorTopicA
         this.topicB = topicB
-        this.errorTopicB = errorTopicB
         this.topicC = topicC
-        this.errorTopicC = errorTopicC
+        this.errorTopic = errorTopic
 
         topology = create()
     }
@@ -53,22 +52,21 @@ class ExampleTopology {
 
         AsyncMessagesSaga saga = new AsyncMessagesSaga()
         saga.timeout(Duration.ofSeconds(30))
-        saga.topic(topicA, errorTopicA)
+        saga.topic(topicA, errorTopic)
         saga.startsWith(Event_A_1.class)
 
         saga.step()
                 .named("fetch_B-1_and_B-2")
                 .heartBeat(HeartBeatInterval.ofSeconds(2))
-                .sources(sourceFrom(topicA), sourceFrom(topicB), sourceFrom(errorTopicB))
+                .sources(sourceFrom(topicA), sourceFrom(topicB), sourceFrom(errorTopic))
                 .requires(Event_B_1)
                 .requires(Event_B_2)
                 .onComplete(new CompleteB())
         saga.step()
                 .named("fetch_C-1")
                 .heartBeat(HeartBeatInterval.ofSeconds(2))
-                .sources(sourceFrom(topicA), sourceFrom(topicC), sourceFrom(errorTopicC))
+                .sources(sourceFrom(topicA), sourceFrom(topicC), sourceFrom(errorTopic))
                 .requires(Event_C_1)
-                .expectsError(Error_C_1)
                 .onComplete(new CompleteC())
 
         saga.joinInto(topology)
@@ -80,9 +78,8 @@ class ExampleTopology {
         new StreamsBuilder().build()
                 .addSource(sourceFrom(topicA), topicA)
                 .addSource(sourceFrom(topicB), topicB)
-                .addSource(sourceFrom(errorTopicB), errorTopicB)
                 .addSource(sourceFrom(topicC), topicC)
-                .addSource(sourceFrom(errorTopicC), errorTopicC)
+                .addSource(sourceFrom(errorTopic), errorTopic)
     }
 
     private String sourceFrom(String topic) {
@@ -99,6 +96,11 @@ class ExampleTopology {
         ) {
 
             isBCompleted = true
+        }
+
+        @Override
+        void onError(@NotNull MessageEnvelope error, @NotNull MessageBus messageBus) {
+            isBErrorOccurred = true
         }
     }
 

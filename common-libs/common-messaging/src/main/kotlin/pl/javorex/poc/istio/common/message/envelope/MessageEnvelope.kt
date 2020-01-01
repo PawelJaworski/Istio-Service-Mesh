@@ -23,9 +23,14 @@ data class MessageEnvelope(
     fun isVersionOf(sourceId: String, sourceVersion: Long) =
         this.sourceId == sourceId && this.sourceVersion == sourceVersion
 
+    fun repack(type: String) =
+            MessageEnvelope(this.sourceId, this.sourceVersion, this.timestamp, type, this.payload)
+
     fun asString() = "{$sourceId, $sourceVersion, $payload,${LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), TimeZone
             .getDefault().toZoneId())}}"
 }
+
+
 
 fun pack(sourceId: String, sourceVersion: Long, message: Any): MessageEnvelope {
     val messageType = message::class.java.simpleName

@@ -32,6 +32,7 @@ class AsyncMessagesSaga {
 
     fun sink() = sink
     fun errSink() = errorSink
+    fun errTopic() = errTopic
     fun topic(topic: String, errTopic: String) {
         this.topic = topic
         this.sink = "$topic-sink"
@@ -82,11 +83,6 @@ class SagaStep(private val saga: AsyncMessagesSaga) {
         return this
     }
 
-    fun expectsError(clazz: Class<*>): SagaStep {
-        async.expectErrors(clazz)
-        return this
-    }
-
     fun heartBeat(heartBeatInterval: HeartBeatInterval): SagaStep {
         this.heartBeatInterval = heartBeatInterval
         return this
@@ -121,7 +117,8 @@ class SagaStep(private val saga: AsyncMessagesSaga) {
                         storeName,
                         _onComplete,
                         saga.sink(),
-                        saga.errSink()
+                        saga.errSink(),
+                        saga.errTopic()
                     )
                 },
                 *_sources
