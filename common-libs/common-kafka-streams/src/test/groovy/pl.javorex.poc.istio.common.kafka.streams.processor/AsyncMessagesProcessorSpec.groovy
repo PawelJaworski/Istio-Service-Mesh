@@ -38,6 +38,7 @@ class AsyncMessagesProcessorSpec extends Specification {
 
     @Shared
     TopologyTestDriver testDriver
+
     @Shared
     TestInputTopic<String, MessageEnvelope> inputA
     @Shared
@@ -99,7 +100,7 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         testDriver.advanceWallClockTime(Duration.ofSeconds(10))
 
-        TestRecord<String, MessageEnvelope> error = new TestRecord<>(KEY_1, pack(KEY_1, 1, "error"))
+        TestRecord<String, MessageEnvelope> error = new TestRecord<>(KEY_1, pack(KEY_1, 1, "test-error"))
         error.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
         inputError.pipeInput(error)
 
@@ -114,6 +115,6 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         then:
         !testedTopology.isBCompleted
-        testedTopology.isBErrorOccurred
+        testedTopology.errorB == "messaging.failure.runtimeError"
     }
 }

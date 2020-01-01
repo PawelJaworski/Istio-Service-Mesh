@@ -10,7 +10,7 @@ data class AsyncMessagesTemplate(
 ) {
     private var messages: CurrentMessages =
         CurrentMessages()
-    private val errors: ArrayList<MessageEnvelope> = arrayListOf()
+    private val errors: ArrayList<ErrorEnvelope> = arrayListOf()
 
     fun updateMessages(messages: CurrentMessages) : AsyncMessagesTemplate {
         this.messages = messages
@@ -27,15 +27,11 @@ data class AsyncMessagesTemplate(
             !messages.expects(messageType) ->
                 return
             messages.isVersionDiffers(sourceVersion) -> {
-                putError(sourceId, sourceVersion,
-                    ConcurrentModification("Concurrent modification occurred")
-                )
-                putError(sourceId, messages.version,
-                    ConcurrentModification("Concurrent modification occurred")
-                )
+                putError(sourceId, sourceVersion, "messaging.failure.concurrentModification")
+                putError(sourceId, messages.version,"messaging.failure.concurrentModification")
             }
             messages.alreadyContains(messageType) ->
-                putError(sourceId, sourceVersion, DoubleMessage(messageType))
+                putError(sourceId, sourceVersion, "messaging.failure.doubleMessage")
             messages.expects(messageType) ->
                 messages.collect(message)
         }
@@ -60,19 +56,15 @@ data class AsyncMessagesTemplate(
 
     fun hasErrors() = errors.isNotEmpty()
 
-    fun takeErrors(): List<MessageEnvelope> {
+    fun takeErrors(): List<ErrorEnvelope> {
         val takenErrors = errors.toMutableList()
 
         errors.clear()
         return takenErrors
     }
 
-    private fun putError(sourceId: String, sourceVersion: Long, message: Any) {
-        errors += pack(sourceId, sourceVersion, message)
-    }
-
-    private fun putError(message: MessageEnvelope) {
-        errors += message
+    private fun putError(sourceId: String, sourceVersion: Long, errorCode: String) {
+        errors += ErrorEnvelope(sourceId, sourceVersion, errorCode)
     }
 }
 

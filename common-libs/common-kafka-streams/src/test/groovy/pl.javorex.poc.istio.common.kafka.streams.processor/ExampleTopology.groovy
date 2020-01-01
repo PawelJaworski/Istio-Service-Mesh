@@ -26,7 +26,7 @@ class ExampleTopology {
     final Topology topology
 
     boolean isBCompleted
-    boolean isBErrorOccurred
+    String errorB
     boolean isCCompleted
 
     static {
@@ -99,14 +99,16 @@ class ExampleTopology {
         }
 
         @Override
-        void onError(@NotNull MessageEnvelope error, @NotNull MessageBus messageBus) {
-            isBErrorOccurred = true
+        void onFailure(@NotNull String aggregateId, long transactionId, @NotNull String errorCode,
+                     @NotNull MessageBus messageBus) {
+            errorB = errorCode
         }
     }
 
     class CompleteC implements AsyncMessageCallback {
 
-        void onComplete(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages currentMessages, @NotNull MessageBus messageBus) {
+        void onComplete(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages currentMessages,
+                        @NotNull MessageBus messageBus) {
             isCCompleted = true
         }
     }

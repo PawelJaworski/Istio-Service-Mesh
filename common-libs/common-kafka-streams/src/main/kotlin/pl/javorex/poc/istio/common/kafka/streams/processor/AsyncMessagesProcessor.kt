@@ -49,7 +49,7 @@ class AsyncMessagesProcessor(
         val messaging = templateSupplier().updateMessages(messages)
 
         if (messaging.isStarted() && context.topic() == errorTopic) {
-            messageCallback.onError(message, messageBus)
+            messageCallback.onFailure(message.sourceId, message.sourceVersion, "messaging.failure.runtimeError", messageBus)
             deleteFromStore(sourceId)
             return
         }
@@ -68,7 +68,7 @@ class AsyncMessagesProcessor(
             }
             messaging.hasErrors() -> {
                 messaging.takeErrors().forEach{
-                    messageCallback.onError(it, messageBus)
+                    messageCallback.onFailure(it.aggregateId, it.transactionId, it.errorCode, messageBus)
                 }
                 deleteFromStore(sourceId)
             }

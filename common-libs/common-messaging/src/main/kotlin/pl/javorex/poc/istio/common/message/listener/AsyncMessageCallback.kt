@@ -9,10 +9,8 @@ interface AsyncMessageCallback {
     fun onComplete(sourceId: String, sourceVersion: Long, currentMessages: CurrentMessages, messageBus: MessageBus)
 
     @JvmDefault
-    fun onError(error: MessageEnvelope, messageBus: MessageBus) {
-        val errorMsg = error.payload.toString()
+    fun onFailure(aggregateId: String, transactionId: Long, errorCode: String, messageBus: MessageBus) {
 
-        //messageBus.emitError(error.sourceId, error.sourceVersion, errorMsg)
     }
 
     @JvmDefault
