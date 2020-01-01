@@ -92,7 +92,7 @@ class AsyncMessagesProcessorSpec extends Specification {
         true
     }
 
-    def "should failed on error"() {
+    def "should fail on error"() {
         when:
         TestRecord<String, MessageEnvelope> testRecord = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
         testRecord.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
@@ -106,15 +106,42 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         testDriver.advanceWallClockTime(Duration.ofMinutes(5))
 
-//        outputError.readRecordsToList()
-//                .forEach{
-//                    println("${it.value().asString()}")
-//                    println("${it.headers()}")
-//                    println("--------------------------------------------------")
-//                }
-
         then:
         !testedTopology.isBCompleted
         testedTopology.errorB == "messaging.failure.runtimeError"
+    }
+
+    def "should failed on double message"() {
+        when:
+        TestRecord<String, MessageEnvelope> record1 = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
+        record1.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        inputA.pipeInput(record1)
+
+        testDriver.advanceWallClockTime(Duration.ofSeconds(1))
+        TestRecord<String, MessageEnvelope> record2 = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
+        record2.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        inputA.pipeInput(record2)
+
+        then:
+        !testedTopology.isBCompleted
+        testedTopology.errorB == "messaging.failure.doubleMessage"
+    }
+
+    def "should failed on concurrent modification"(TestRecord<String, MessageEnvelope>[] inputsForA) {
+        when:
+        inputsForA.toList().forEach{
+            inputA.pipeInput(it)
+            testDriver.advanceWallClockTime(Duration.ofSeconds(1))
+        }
+
+        then:
+        !testedTopology.isBCompleted
+        testedTopology.errorB == "messaging.failure.concurrentModification"
+
+        where:
+        inputsForA << [[
+                new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1())),
+                new TestRecord<>(KEY_1, pack(KEY_1, 2, new Event_B_1()))
+        ]]
     }
 }
