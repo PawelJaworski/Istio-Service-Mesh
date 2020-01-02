@@ -28,6 +28,7 @@ class AsyncMessagesProcessorSpec extends Specification {
 
     static final String KEY_1 = "key1"
     static final String KEY_2 = "key2"
+    static final long TRANSACTION_1 = 1
 
     static final String TOPIC_A = "topicA"
     static final String TOPIC_B = "topicB"
@@ -140,8 +141,47 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         where:
         inputsForA << [[
-                new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1())),
-                new TestRecord<>(KEY_1, pack(KEY_1, 2, new Event_B_1()))
+            new TestRecordBuilder(KEY_1, 1, new Event_A_1())
+                    .build(),
+            new TestRecordBuilder(KEY_1, 2, new Event_B_1())
+                    .build()
         ]]
+    }
+
+    def "should complete"() {
+        given:
+        TestRecord<String, MessageEnvelope> recordA1 = new TestRecordBuilder(KEY_1, TRANSACTION_1, new Event_A_1())
+                .build()
+        TestRecord<String, MessageEnvelope> recordB1 = new TestRecordBuilder(KEY_1, TRANSACTION_1, new Event_B_1())
+                .build()
+        TestRecord<String, MessageEnvelope> recordB2 = new TestRecordBuilder(KEY_1, TRANSACTION_1, new Event_B_2())
+                .build()
+        TestRecord<String, MessageEnvelope> recordC1 = new TestRecordBuilder(KEY_1, TRANSACTION_1, new Event_C_1())
+                .build()
+
+        when:
+        inputA.pipeInput(recordA1)
+        testDriver.advanceWallClockTime(Duration.ofMillis(1))
+        inputA.pipeInput(recordB1)
+        testDriver.advanceWallClockTime(Duration.ofMillis(1))
+        inputA.pipeInput(recordB2)
+        testDriver.advanceWallClockTime(Duration.ofMillis(1))
+        inputA.pipeInput(recordC1)
+
+        then:
+        testedTopology.isBCompleted
+        testedTopology.isCCompleted
+    }
+}
+
+class TestRecordBuilder {
+    private TestRecord<String, MessageEnvelope> testRecord
+
+    TestRecordBuilder(String key, long transactionId, Object message) {
+        this.testRecord = new TestRecord<>(key, pack(key, transactionId, message))
+    }
+
+    TestRecord<String, MessageEnvelope> build() {
+        return testRecord
     }
 }
