@@ -10,10 +10,10 @@ import pl.javorex.poc.istio.common.message.async.CurrentMessages
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
 import java.time.Duration
 
-class AsyncMessagesSaga {
+class AsyncMessagesSaga<M> {
     private lateinit var starts: Class<*>
     private lateinit var timeout: Duration
-    private val steps = hashSetOf<SagaStep>()
+    private val steps = hashSetOf<SagaStep<M>>()
     private lateinit var topic: String
     private lateinit var sink: String
     private lateinit var errTopic: String
@@ -40,7 +40,7 @@ class AsyncMessagesSaga {
         this.errorSink = "$errTopic-sink"
     }
 
-    fun step(): SagaStep {
+    fun step(): SagaStep<M> {
         val newStep = SagaStep(this)
         steps += newStep
 
@@ -61,39 +61,39 @@ class AsyncMessagesSaga {
     }
 }
 
-class SagaStep(private val saga: AsyncMessagesSaga) {
+class SagaStep<M>(private val saga: AsyncMessagesSaga<M>) {
     private lateinit var processorName: String
     private lateinit var storeName: String
-    private val async = AsyncMessagesBuilder()
+    private val async = AsyncMessagesBuilder<M>()
     private var heartBeatInterval =
         HeartBeatInterval.ofSeconds(5)
-    private lateinit var _onComplete: AsyncMessageCallback
+    private lateinit var _onComplete: AsyncMessageCallback<M>
     private lateinit var _sources: Array<out String>
 
     fun processorName() = processorName
 
-    fun named(named: String): SagaStep {
+    fun named(named: String): SagaStep<M> {
         this.processorName = "$named-processor"
         this.storeName = "$named-store"
         return this
     }
 
-    fun requires(clazz: Class<*>): SagaStep {
+    fun requires(clazz: Class<*>): SagaStep<M> {
         async.requires(clazz)
         return this
     }
 
-    fun heartBeat(heartBeatInterval: HeartBeatInterval): SagaStep {
+    fun heartBeat(heartBeatInterval: HeartBeatInterval): SagaStep<M> {
         this.heartBeatInterval = heartBeatInterval
         return this
     }
 
-    fun onComplete(onComplete: AsyncMessageCallback): SagaStep {
+    fun onComplete(onComplete: AsyncMessageCallback<M>): SagaStep<M> {
         this._onComplete = onComplete
         return this
     }
 
-    fun sources(vararg sources: String): SagaStep {
+    fun sources(vararg sources: String): SagaStep<M> {
         this._sources = sources
         return this
     }

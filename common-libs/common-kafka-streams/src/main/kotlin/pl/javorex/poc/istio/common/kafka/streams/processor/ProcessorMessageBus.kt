@@ -9,33 +9,18 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.lang.Exception
 
-class ProcessorMessageBus(
+class ProcessorMessageBus<M>(
         private val context: ProcessorContext,
         private val sinkName: String,
         private val errorSinkName: String
 
-) : MessageBus {
-    fun emitProcessFailure(message: MessageEnvelope, ex: Exception) {
-        val processFailure =
-            ProcessorFailure(message, ex.asStackTraceString())
+) : MessageBus<M> {
 
-        emitError(message.sourceId, message.sourceVersion, processFailure)
+    override fun emitError(messageKey: String, message: M) {
+        context.forward(messageKey, message, To.child(errorSinkName))
     }
 
-    override fun emitError(messageKey: String, transactionId: Long, message: Any) {
-        val messageEnvelope = pack(messageKey, transactionId, message)
-        context.forward(messageKey, messageEnvelope, To.child(errorSinkName))
-    }
+    override fun emit(messageKey: String, message: M) {
+        context.forward(messageKey, message, To.child(sinkName))}
 
-    override fun emit(messageKey: String, transactionId: Long, message: Any) {
-        val messageEnvelope = pack(messageKey, transactionId, message)
-        context.forward(messageKey, messageEnvelope, To.child(sinkName))}
-
-}
-
-private fun Exception.asStackTraceString() : String {
-    val sw = StringWriter()
-    this.printStackTrace(PrintWriter(sw))
-
-    return sw.toString()
 }

@@ -4,6 +4,7 @@ import org.apache.kafka.common.header.Headers
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 
+
 fun Headers.addString(key: String, value: String) {
     this.add(key, value.toByteArray(UTF_8))
 }
@@ -40,8 +41,7 @@ private object ByteUtils {
     }
 
     fun bytesToLong(bytes: ByteArray): Long {
-        buffer.put(bytes, 0, bytes.size)
-        buffer.flip() //need flip
-        return buffer.getLong()
+        val buffer = ByteBuffer.wrap(bytes)
+        return buffer.long
     }
 }

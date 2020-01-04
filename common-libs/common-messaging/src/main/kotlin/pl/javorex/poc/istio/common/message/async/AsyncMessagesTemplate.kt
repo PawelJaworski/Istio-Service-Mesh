@@ -5,20 +5,20 @@ import pl.javorex.poc.istio.common.message.envelope.pack
 
 val LACK_OF_MESSAGE = null
 
-data class AsyncMessagesTemplate(
+data class AsyncMessagesTemplate<M>(
     internal val timeout: Long = 0
 ) {
-    private var messages: CurrentMessages =
+    private var messages: CurrentMessages<M> =
         CurrentMessages()
     private val errors: ArrayList<ErrorEnvelope> = arrayListOf()
 
-    fun updateMessages(messages: CurrentMessages) : AsyncMessagesTemplate {
+    fun updateMessages(messages: CurrentMessages<M>) : AsyncMessagesTemplate<M> {
         this.messages = messages
 
         return this
     }
 
-    fun mergeMessage(message: MessageEnvelope) {
+    fun mergeMessage(message: MessageEnvelope<M>) {
         val messageType = message.messageType
         val sourceId = message.sourceId
         val sourceVersion = message.sourceVersion
@@ -72,20 +72,20 @@ private const val NO_VERSION = Long.MIN_VALUE
 
 private const val MESSAGE_HAVENT_ARRIVED_YET = Long.MAX_VALUE
 
-fun messagesOf() = CurrentMessages()
-fun messagesOf(otherMessages: CurrentMessages) : CurrentMessages {
-    val messages = CurrentMessages()
+fun <M>messagesOf() = CurrentMessages<M>()
+fun <M>messagesOf(otherMessages: CurrentMessages<M>) : CurrentMessages<M> {
+    val messages:CurrentMessages<M> = CurrentMessages()
     messages.starting.putAll(otherMessages.starting)
     messages.required.putAll(otherMessages.required)
 
     return messages
 }
 
-data class CurrentMessages(
+data class CurrentMessages<M>(
     @PublishedApi
-    internal val starting: HashMap<String, MessageEnvelope?> = hashMapOf(),
+    internal val starting: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
     @PublishedApi
-    internal val required: HashMap<String, MessageEnvelope?> = hashMapOf(),
+    internal val required: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
     @PublishedApi
     internal val creationTimestamp: Long = System.currentTimeMillis(),
     @PublishedApi
@@ -93,7 +93,7 @@ data class CurrentMessages(
     @PublishedApi
     internal var version: Long = NO_VERSION
 ) {
-    fun collect(message: MessageEnvelope) {
+    fun collect(message: MessageEnvelope<M>) {
         val messageType = message.messageType
         when {
             starting.contains(messageType) -> {
@@ -107,13 +107,12 @@ data class CurrentMessages(
         }
     }
 
-    inline operator fun <reified T>get(message: Class<T>): T {
-            val messageType = message.simpleName
+    inline operator fun <reified T>get(messageType: String): M {
             return when {
                 starting.contains(messageType) ->
-                    starting[messageType]!!.unpack(T::class.java)
+                    starting[messageType]!!.payload!!
                 required.contains(messageType) ->
-                    required[messageType]!!.unpack(T::class.java)
+                    required[messageType]!!.payload!!
                 else -> throw IllegalStateException("Cannot get message of type $messageType")
             }
     }
@@ -135,6 +134,3 @@ data class CurrentMessages(
     internal fun containsAllRequired() =
         starting.none { it.value == LACK_OF_MESSAGE } && required.none { it.value == LACK_OF_MESSAGE }
 }
-
-data class ConcurrentModification(val error: String)
-data class DoubleMessage(val messageType: String)

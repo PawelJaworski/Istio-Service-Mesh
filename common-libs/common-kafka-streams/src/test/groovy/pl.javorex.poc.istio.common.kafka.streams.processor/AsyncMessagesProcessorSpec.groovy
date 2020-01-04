@@ -1,5 +1,11 @@
 package pl.javorex.poc.istio.common.kafka.streams.processor
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
@@ -16,19 +22,29 @@ import spock.lang.Shared
 import spock.lang.Specification
 import org.apache.kafka.streams.TopologyTestDriver
 
+import java.nio.ByteBuffer
 import java.time.Duration
 
 import static pl.javorex.poc.istio.common.message.envelope.MessageEnvelopeKt.pack
 
 class AsyncMessagesProcessorSpec extends Specification {
+    static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .registerModule(new ParameterNamesModule())
+            .registerModule(new Jdk8Module())
+            .registerModule(new JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+
     static final StringSerializer KEY_SERIALIZER = new StringSerializer()
     static final JsonPOJOSerializer<MessageEnvelope> VALUE_SERIALIZER = new JsonPOJOSerializer<MessageEnvelope>()
 
     static final String HEADER_TRANSACTION_ID = "transactionId"
 
     static final String KEY_1 = "key1"
-    static final String KEY_2 = "key2"
     static final long TRANSACTION_1 = 1
+    static final String KEY_2 = "key2"
+    static final long TRANSACTION_2 = 2
+
 
     static final String TOPIC_A = "topicA"
     static final String TOPIC_B = "topicB"
@@ -68,59 +84,47 @@ class AsyncMessagesProcessorSpec extends Specification {
         config[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = MessageEnvelopeSerde.class
     }
 
-    def "test test"() {
-        when:
-        TestRecord<String, MessageEnvelope> testRecord = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
-        testRecord.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
-        inputA.pipeInput(testRecord)
-
-        testDriver.advanceWallClockTime(Duration.ofSeconds(10))
-
-        TestRecord<String, MessageEnvelope> testRecord2 = new TestRecord<>(KEY_2, pack(KEY_2, 2, new Event_A_1()))
-        testRecord.headers().add(HEADER_TRANSACTION_ID, "2".bytes)
-        inputA.pipeInput(testRecord2)
-
-        testDriver.advanceWallClockTime(Duration.ofMinutes(5))
-
-//        outputError.readRecordsToList()
-//                .forEach{
-//                    println("${it.value().asString()}")
-//                    println("${it.headers()}")
-//                    println("--------------------------------------------------")
-//        }
-
-        then:
-        true
-    }
-
     def "should fail on error"() {
         when:
-        TestRecord<String, MessageEnvelope> testRecord = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
-        testRecord.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        TestRecord<String, MessageEnvelope> testRecord = new TestRecordBuilder(
+                KEY_1,
+                TRANSACTION_1,
+                new Event_A_1()
+        ).build()
         inputA.pipeInput(testRecord)
 
         testDriver.advanceWallClockTime(Duration.ofSeconds(10))
 
-        TestRecord<String, MessageEnvelope> error = new TestRecord<>(KEY_1, pack(KEY_1, 1, "test-error"))
-        error.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        TestRecord<String, MessageEnvelope> error = new TestRecordBuilder(
+                KEY_1,
+                TRANSACTION_1,
+                "test-error"
+        ).build()
         inputError.pipeInput(error)
 
         testDriver.advanceWallClockTime(Duration.ofMinutes(5))
 
         then:
+        println("$testedTopology.errorB")
         !testedTopology.isBCompleted
         testedTopology.errorB == "messaging.failure.runtimeError"
     }
 
     def "should failed on double message"() {
         when:
-        TestRecord<String, MessageEnvelope> record1 = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
-        record1.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        TestRecord<String, MessageEnvelope> record1 = new TestRecordBuilder(
+                KEY_1,
+                TRANSACTION_1,
+                new Event_A_1()
+        ).build()
         inputA.pipeInput(record1)
 
         testDriver.advanceWallClockTime(Duration.ofSeconds(1))
-        TestRecord<String, MessageEnvelope> record2 = new TestRecord<>(KEY_1, pack(KEY_1, 1, new Event_A_1()))
-        record2.headers().add(HEADER_TRANSACTION_ID, "1".bytes)
+        TestRecord<String, MessageEnvelope> record2 = new TestRecordBuilder(
+                KEY_1,
+                TRANSACTION_1,
+                new Event_A_1()
+        ).build()
         inputA.pipeInput(record2)
 
         then:
@@ -178,7 +182,15 @@ class TestRecordBuilder {
     private TestRecord<String, MessageEnvelope> testRecord
 
     TestRecordBuilder(String key, long transactionId, Object message) {
-        this.testRecord = new TestRecord<>(key, pack(key, transactionId, message))
+        this.testRecord = new TestRecord<>(
+                key,
+                AsyncMessagesProcessorSpec.OBJECT_MAPPER.writeValueAsString(message)
+        )
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(transactionId);
+        byte[] asBytes = buffer.array();
+        this.testRecord.headers().add("transactionId", asBytes)
+        this.testRecord.headers().add("messageType", message.class.simpleName.bytes)
     }
 
     TestRecord<String, MessageEnvelope> build() {

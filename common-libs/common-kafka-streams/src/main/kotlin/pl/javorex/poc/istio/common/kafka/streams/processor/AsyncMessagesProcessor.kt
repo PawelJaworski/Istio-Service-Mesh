@@ -2,75 +2,93 @@ package pl.javorex.poc.istio.common.kafka.streams.processor
 
 import org.apache.kafka.streams.processor.*
 import org.apache.kafka.streams.state.KeyValueStore
+import pl.javorex.poc.istio.common.kafka.streams.message.getLong
+import pl.javorex.poc.istio.common.kafka.streams.message.getString
 import pl.javorex.poc.istio.common.message.async.AsyncMessagesTemplate
 import pl.javorex.poc.istio.common.message.async.CurrentMessages
 import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
+import pl.javorex.poc.istio.common.message.envelope.pack
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
 import java.lang.Exception
 import java.time.Duration
 
-class AsyncMessagesProcessor(
-    private val templateSupplier: () -> AsyncMessagesTemplate,
+const val HEADER_MESSAGE_TYPE = "messageType"
+const val HEADER_TRANSACTION_ID = "transactionId"
+
+class AsyncMessagesProcessor<M>(
+    private val templateSupplier: () -> AsyncMessagesTemplate<M>,
     private val heartBeatInterval: HeartBeatInterval,
     private val storeName: String,
-    private val messageCallback: AsyncMessageCallback,
+    private val messageCallback: AsyncMessageCallback<M>,
     private val sinkType: String,
     private val errorSinkType: String,
     private val errorTopic: String
-) : Processor<String, MessageEnvelope> {
-    private lateinit var store: KeyValueStore<String, CurrentMessages>
-    private lateinit var messageBus: ProcessorMessageBus
+) : Processor<String, M> {
+    private lateinit var store: KeyValueStore<String, CurrentMessages<M>>
+    private lateinit var messageBus: ProcessorMessageBus<M>
     private lateinit var context: ProcessorContext
     override fun init(context: ProcessorContext) {
         this.context = context
         store = context
-                .getStateStore(storeName) as KeyValueStore<String, CurrentMessages>
+                .getStateStore(storeName) as KeyValueStore<String, CurrentMessages<M>>
         messageBus =
             ProcessorMessageBus(context!!, sinkType, errorSinkType)
         context
                 .schedule(heartBeatInterval.duration, PunctuationType.WALL_CLOCK_TIME, this::doHeartBeat)
     }
 
-    override fun process(sourceId: String, message: MessageEnvelope?) {
+    override fun process(key: String, message: M?) {
         if (message == null) {
             return
         }
 
         try {
-            tryProcess(message)
+            tryProcess(key, message)
         } catch(ex: Exception) {
-            messageBus.emitProcessFailure(message, ex)
+            ex.printStackTrace()
+            val transactionId = context.headers().getLong(HEADER_TRANSACTION_ID)
+            messageCallback.onFailure(key, transactionId, "messaging.failure.processorError", messageBus)
         }
     }
 
-    private fun tryProcess(message: MessageEnvelope) {
-        val sourceId = message.sourceId
-        val messages = store.get(sourceId) ?: templateSupplier().messages()
+    private fun tryProcess(key: String, message: M) {
+        val messageType = context.headers()
+                .getString(HEADER_MESSAGE_TYPE)
+        val transactionId = context.headers()
+                .getLong(HEADER_TRANSACTION_ID)
+
+        val messages = store.get(key) ?: templateSupplier().messages()
         val messaging = templateSupplier().updateMessages(messages)
 
-        if (messaging.isStarted() && context.topic() == errorTopic) {
-            messageCallback.onFailure(message.sourceId, message.sourceVersion, "messaging.failure.runtimeError", messageBus)
-            deleteFromStore(sourceId)
+        if(context.topic() == errorTopic) {
+            if (messaging.messagesVersion() == transactionId) {
+                messageCallback.onFailure(key, transactionId, "messaging.failure.runtimeError", messageBus)
+                deleteFromStore(key)
+            }
             return
         }
 
-        if (!messaging.expects(message.messageType)) {
+
+        if (!messaging.expects(messageType)) {
             return
         }
 
-        messaging.mergeMessage(message)
-        store.put(sourceId, messages)
+        val messageEnvelope: MessageEnvelope<M> = pack(key, transactionId, messageType, message)
+        messaging.mergeMessage(messageEnvelope)
+        store.put(key, messages)
 
         when {
             messaging.isComplete() -> {
-                messageCallback.onComplete(sourceId, messaging.messagesVersion(), messaging.messages(), messageBus)
-                deleteFromStore(sourceId)
+                messageCallback.onComplete(key, messaging.messagesVersion(), messaging.messages(), messageBus)
+                deleteFromStore(key)
             }
             messaging.hasErrors() -> {
                 messaging.takeErrors().forEach{
-                    messageCallback.onFailure(it.aggregateId, it.transactionId, it.errorCode, messageBus)
+                    val key = it.aggregateId
+                    val transactionId = it.transactionId
+                    messageCallback.onFailure(key, transactionId, it.errorCode, messageBus)
                 }
-                deleteFromStore(sourceId)
+                deleteFromStore(key)
             }
         }
     }
@@ -100,7 +118,7 @@ class AsyncMessagesProcessor(
         }
     }
 
-    private fun fireTimeoutEvent(sourceId: String, saga: AsyncMessagesTemplate) {
+    private fun fireTimeoutEvent(sourceId: String, saga: AsyncMessagesTemplate<M>) {
         val sagaVersion = saga.messagesVersion()
         messageCallback.onTimeout(sourceId, sagaVersion, saga.messages(), messageBus)
     }

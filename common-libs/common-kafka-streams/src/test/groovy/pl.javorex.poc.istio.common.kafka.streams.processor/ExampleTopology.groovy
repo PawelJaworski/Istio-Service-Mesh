@@ -13,6 +13,7 @@ import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
 
 import java.time.Duration
+import java.util.stream.Collectors
 
 @CompileStatic
 class ExampleTopology {
@@ -33,7 +34,7 @@ class ExampleTopology {
         config[StreamsConfig.APPLICATION_ID_CONFIG] = "Create-Loan-Stream"
         config[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = "0.0.0.0:0001"
         config[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = Serdes.StringSerde.class
-        config[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = MessageEnvelopeSerde.class
+        config[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = Serdes.StringSerde.class
         config[StreamsConfig.RETRIES_CONFIG] = Integer.MAX_VALUE
         config[StreamsConfig.RETRY_BACKOFF_MS_CONFIG] = 5000
     }
@@ -86,13 +87,13 @@ class ExampleTopology {
         "$topic-source"
     }
 
-    class CompleteB implements AsyncMessageCallback {
+    class CompleteB implements AsyncMessageCallback<String> {
         @Override
         void onComplete(
                 @NotNull String sourceId,
                 long sourceVersion,
-                @NotNull CurrentMessages currentMessages,
-                @NotNull MessageBus messageBus
+                @NotNull CurrentMessages<String> currentMessages,
+                @NotNull MessageBus<String> messageBus
         ) {
 
             isBCompleted = true
@@ -100,16 +101,29 @@ class ExampleTopology {
 
         @Override
         void onFailure(@NotNull String aggregateId, long transactionId, @NotNull String errorCode,
-                     @NotNull MessageBus messageBus) {
+                     @NotNull MessageBus<String> messageBus) {
             errorB = errorCode
+        }
+
+        void onTimeout(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages<String> currentMessages, @NotNull MessageBus<String> messageBus) {
+            List<String> missingEvents = currentMessages.missing()
+            errorB = "Timeout. Missing: $missingEvents"
         }
     }
 
-    class CompleteC implements AsyncMessageCallback {
+    class CompleteC implements AsyncMessageCallback<String> {
 
         void onComplete(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages currentMessages,
                         @NotNull MessageBus messageBus) {
             isCCompleted = true
+        }
+
+        void onFailure(@NotNull String key, long transactionId, @NotNull String errorCode, @NotNull MessageBus<String> messageBus) {
+
+        }
+
+        void onTimeout(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages<String> currentMessages, @NotNull MessageBus<String> messageBus) {
+
         }
     }
 }
