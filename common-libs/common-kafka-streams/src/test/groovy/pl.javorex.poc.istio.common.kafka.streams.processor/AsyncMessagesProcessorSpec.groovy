@@ -105,7 +105,6 @@ class AsyncMessagesProcessorSpec extends Specification {
         testDriver.advanceWallClockTime(Duration.ofMinutes(5))
 
         then:
-        println("$testedTopology.errorB")
         !testedTopology.isBCompleted
         testedTopology.errorB == "messaging.failure.runtimeError"
     }

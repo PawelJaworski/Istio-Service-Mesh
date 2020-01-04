@@ -7,7 +7,6 @@
     <name>common-parent</name>
 
     <modules>
-        <module>util-functional</module>
         <module>common-messaging</module>
         <module>common-kafka-streams</module>
     </modules>

@@ -1,7 +1,6 @@
 package pl.javorex.poc.istio.common.message.async
 
 import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
-import pl.javorex.poc.istio.common.message.envelope.pack
 
 val LACK_OF_MESSAGE = null
 
@@ -50,8 +49,6 @@ data class AsyncMessagesTemplate<M>(
 
     fun isExpired(timestamp: Long) = messages.creationTimestamp + 2 * timeout < timestamp
 
-    fun isStarted() = messages.isStarted()
-
     fun isComplete() = messages.containsAllRequired()
 
     fun hasErrors() = errors.isNotEmpty()
@@ -82,16 +79,11 @@ fun <M>messagesOf(otherMessages: CurrentMessages<M>) : CurrentMessages<M> {
 }
 
 data class CurrentMessages<M>(
-    @PublishedApi
-    internal val starting: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
-    @PublishedApi
-    internal val required: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
-    @PublishedApi
-    internal val creationTimestamp: Long = System.currentTimeMillis(),
-    @PublishedApi
-    internal var startedTimestamp: Long = MESSAGE_HAVENT_ARRIVED_YET,
-    @PublishedApi
-    internal var version: Long = NO_VERSION
+    val starting: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
+    val required: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
+    val creationTimestamp: Long = System.currentTimeMillis(),
+    var startedTimestamp: Long = MESSAGE_HAVENT_ARRIVED_YET,
+    var version: Long = NO_VERSION
 ) {
     fun collect(message: MessageEnvelope<M>) {
         val messageType = message.messageType
