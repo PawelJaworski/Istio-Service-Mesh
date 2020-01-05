@@ -4,7 +4,7 @@ import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import pl.javorex.poc.istio.util.kafka.streams.JsonPOJODeserializer
 import pl.javorex.poc.istio.util.kafka.streams.JsonPojoSerde
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
+import pl.javorex.poc.istio.util.messaging.MessageEnvelope
 
 class MessageEnvelopeSerde(
     private val s: JsonPojoSerde<MessageEnvelope<*>> = JsonPojoSerde(

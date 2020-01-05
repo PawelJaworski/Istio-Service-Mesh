@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.message
+package pl.javorex.poc.istio.util.messaging
 
 interface MessageBus<M> {
     fun emit(messageKey: String, message: M)

@@ -1,8 +1,4 @@
-package pl.javorex.poc.istio.common.message.envelope
-
-import java.time.Instant
-import java.time.LocalDateTime
-import java.util.*
+package pl.javorex.poc.istio.util.messaging
 
 data class MessageEnvelope<M>(
         val sourceId: String = "",

@@ -1,6 +1,4 @@
-package pl.javorex.poc.istio.common.message.async
-
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
+package pl.javorex.poc.istio.util.messaging
 
 val LACK_OF_MESSAGE = null
 
@@ -8,7 +6,7 @@ data class AsyncMessagesTemplate<M>(
     internal val timeout: Long = 0
 ) {
     private var messages: CurrentMessages<M> =
-        CurrentMessages()
+            CurrentMessages()
     private val errors: ArrayList<ErrorEnvelope> = arrayListOf()
 
     fun updateMessages(messages: CurrentMessages<M>) : AsyncMessagesTemplate<M> {
@@ -71,7 +69,7 @@ private const val MESSAGE_HAVENT_ARRIVED_YET = Long.MAX_VALUE
 
 fun <M>messagesOf() = CurrentMessages<M>()
 fun <M>messagesOf(otherMessages: CurrentMessages<M>) : CurrentMessages<M> {
-    val messages:CurrentMessages<M> = CurrentMessages()
+    val messages: CurrentMessages<M> = CurrentMessages()
     messages.starting.putAll(otherMessages.starting)
     messages.required.putAll(otherMessages.required)
 
@@ -79,11 +77,11 @@ fun <M>messagesOf(otherMessages: CurrentMessages<M>) : CurrentMessages<M> {
 }
 
 data class CurrentMessages<M>(
-    val starting: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
-    val required: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
-    val creationTimestamp: Long = System.currentTimeMillis(),
-    var startedTimestamp: Long = MESSAGE_HAVENT_ARRIVED_YET,
-    var version: Long = NO_VERSION
+        val starting: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
+        val required: HashMap<String, MessageEnvelope<M>?> = hashMapOf(),
+        val creationTimestamp: Long = System.currentTimeMillis(),
+        var startedTimestamp: Long = MESSAGE_HAVENT_ARRIVED_YET,
+        var version: Long = NO_VERSION
 ) {
     fun collect(message: MessageEnvelope<M>) {
         val messageType = message.messageType

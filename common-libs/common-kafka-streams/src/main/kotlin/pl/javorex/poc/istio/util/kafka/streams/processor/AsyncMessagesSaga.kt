@@ -5,9 +5,9 @@ import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.processor.ProcessorSupplier
 import org.apache.kafka.streams.state.Stores
 import pl.javorex.poc.istio.util.kafka.streams.JsonPojoSerde
-import pl.javorex.poc.istio.common.message.async.AsyncMessagesBuilder
-import pl.javorex.poc.istio.common.message.async.CurrentMessages
-import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
+import pl.javorex.poc.istio.util.messaging.AsyncMessagesBuilder
+import pl.javorex.poc.istio.util.messaging.CurrentMessages
+import pl.javorex.poc.istio.util.messaging.AsyncMessageCallback
 import java.time.Duration
 
 class AsyncMessagesSaga<M> {

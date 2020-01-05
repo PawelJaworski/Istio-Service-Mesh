@@ -6,9 +6,9 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.jetbrains.annotations.NotNull
-import pl.javorex.poc.istio.common.message.MessageBus
-import pl.javorex.poc.istio.common.message.async.CurrentMessages
-import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
+import pl.javorex.poc.istio.util.messaging.MessageBus
+import pl.javorex.poc.istio.util.messaging.CurrentMessages
+import pl.javorex.poc.istio.util.messaging.AsyncMessageCallback
 
 import java.time.Duration
 

@@ -6,11 +6,11 @@ import pl.javorex.poc.istio.util.kafka.streams.message.addLong
 import pl.javorex.poc.istio.util.kafka.streams.message.addString
 import pl.javorex.poc.istio.util.kafka.streams.message.getLong
 import pl.javorex.poc.istio.util.kafka.streams.message.getString
-import pl.javorex.poc.istio.common.message.async.AsyncMessagesTemplate
-import pl.javorex.poc.istio.common.message.async.CurrentMessages
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
-import pl.javorex.poc.istio.common.message.envelope.pack
-import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
+import pl.javorex.poc.istio.util.messaging.AsyncMessagesTemplate
+import pl.javorex.poc.istio.util.messaging.CurrentMessages
+import pl.javorex.poc.istio.util.messaging.MessageEnvelope
+import pl.javorex.poc.istio.util.messaging.pack
+import pl.javorex.poc.istio.util.messaging.AsyncMessageCallback
 import java.lang.Exception
 import java.time.Duration
 

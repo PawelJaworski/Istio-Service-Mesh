@@ -17,7 +17,7 @@ import org.apache.kafka.streams.test.TestRecord
 import pl.javorex.poc.istio.util.kafka.streams.JsonPOJOSerializer
 import pl.javorex.poc.istio.util.kafka.streams.message.MessageEnvelopeDeserializer
 import pl.javorex.poc.istio.util.kafka.streams.message.MessageEnvelopeSerde
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
+import pl.javorex.poc.istio.util.messaging.MessageEnvelope
 import spock.lang.Shared
 import spock.lang.Specification
 import org.apache.kafka.streams.TopologyTestDriver

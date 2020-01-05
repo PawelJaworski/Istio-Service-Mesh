@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.message.async
+package pl.javorex.poc.istio.util.messaging
 
 import java.time.Duration
 

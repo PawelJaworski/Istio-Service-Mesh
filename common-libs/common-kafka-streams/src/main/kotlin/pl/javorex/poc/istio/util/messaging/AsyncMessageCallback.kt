@@ -1,9 +1,4 @@
-package pl.javorex.poc.istio.common.message.listener
-
-import pl.javorex.poc.istio.common.message.MessageBus
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
-import pl.javorex.poc.istio.common.message.async.CurrentMessages
-import pl.javorex.poc.istio.common.message.async.TransactionContext
+package pl.javorex.poc.istio.util.messaging
 
 @FunctionalInterface
 interface AsyncMessageCallback<M> {
