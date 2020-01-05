@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.kafka.streams.processor
+package pl.javorex.poc.istio.util.kafka.streams.processor
 
 import groovy.transform.CompileStatic
 import org.apache.kafka.common.serialization.Serdes
@@ -6,14 +6,11 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.Topology
 import org.jetbrains.annotations.NotNull
-import pl.javorex.poc.istio.common.kafka.streams.message.MessageEnvelopeSerde
 import pl.javorex.poc.istio.common.message.MessageBus
 import pl.javorex.poc.istio.common.message.async.CurrentMessages
-import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
 
 import java.time.Duration
-import java.util.stream.Collectors
 
 @CompileStatic
 class ExampleTopology {

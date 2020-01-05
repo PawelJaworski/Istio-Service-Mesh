@@ -1,10 +1,10 @@
-package pl.javorex.poc.istio.common.kafka.streams.processor
+package pl.javorex.poc.istio.util.kafka.streams.processor
 
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.processor.ProcessorSupplier
 import org.apache.kafka.streams.state.Stores
-import pl.javorex.poc.istio.common.kafka.streams.JsonPojoSerde
+import pl.javorex.poc.istio.util.kafka.streams.JsonPojoSerde
 import pl.javorex.poc.istio.common.message.async.AsyncMessagesBuilder
 import pl.javorex.poc.istio.common.message.async.CurrentMessages
 import pl.javorex.poc.istio.common.message.listener.AsyncMessageCallback
@@ -66,7 +66,7 @@ class SagaStep<M>(private val saga: AsyncMessagesSaga<M>) {
     private lateinit var storeName: String
     private val async = AsyncMessagesBuilder<M>()
     private var heartBeatInterval =
-        HeartBeatInterval.ofSeconds(5)
+            HeartBeatInterval.ofSeconds(5)
     private lateinit var _onComplete: AsyncMessageCallback<M>
     private lateinit var _sources: Array<out String>
 
@@ -106,19 +106,19 @@ class SagaStep<M>(private val saga: AsyncMessagesSaga<M>) {
                 Stores.keyValueStoreBuilder(
                         Stores.persistentKeyValueStore(storeName),
                         Serdes.String(),
-                    JsonPojoSerde(CurrentMessages::class.java)
+                        JsonPojoSerde(CurrentMessages::class.java)
                 )
         kStreamTopology.addProcessor(
                 processorName,
                 ProcessorSupplier {
                     AsyncMessagesProcessor(
-                        { async.build() },
-                        heartBeatInterval,
-                        storeName,
-                        _onComplete,
-                        saga.sink(),
-                        saga.errSink(),
-                        saga.errTopic()
+                            { async.build() },
+                            heartBeatInterval,
+                            storeName,
+                            _onComplete,
+                            saga.sink(),
+                            saga.errSink(),
+                            saga.errTopic()
                     )
                 },
                 *_sources

@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.kafka.streams
+package pl.javorex.poc.istio.util.kafka.streams
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper

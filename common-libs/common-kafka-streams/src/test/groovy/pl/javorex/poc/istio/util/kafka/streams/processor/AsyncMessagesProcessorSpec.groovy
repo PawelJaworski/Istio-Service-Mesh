@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.kafka.streams.processor
+package pl.javorex.poc.istio.util.kafka.streams.processor
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -14,9 +14,9 @@ import org.apache.kafka.streams.TestInputTopic
 import org.apache.kafka.streams.TestOutputTopic
 import org.apache.kafka.streams.Topology
 import org.apache.kafka.streams.test.TestRecord
-import pl.javorex.poc.istio.common.kafka.streams.JsonPOJOSerializer
-import pl.javorex.poc.istio.common.kafka.streams.message.MessageEnvelopeDeserializer
-import pl.javorex.poc.istio.common.kafka.streams.message.MessageEnvelopeSerde
+import pl.javorex.poc.istio.util.kafka.streams.JsonPOJOSerializer
+import pl.javorex.poc.istio.util.kafka.streams.message.MessageEnvelopeDeserializer
+import pl.javorex.poc.istio.util.kafka.streams.message.MessageEnvelopeSerde
 import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
 import spock.lang.Shared
 import spock.lang.Specification
@@ -24,8 +24,6 @@ import org.apache.kafka.streams.TopologyTestDriver
 
 import java.nio.ByteBuffer
 import java.time.Duration
-
-import static pl.javorex.poc.istio.common.message.envelope.MessageEnvelopeKt.pack
 
 class AsyncMessagesProcessorSpec extends Specification {
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()

@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.kafka.streams.message
+package pl.javorex.poc.istio.util.kafka.streams.message
 
 import org.apache.kafka.common.header.Headers
 import java.nio.ByteBuffer

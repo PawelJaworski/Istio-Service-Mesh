@@ -1,4 +1,4 @@
-package pl.javorex.poc.istio.common.kafka.streams.processor
+package pl.javorex.poc.istio.util.kafka.streams.processor
 
 import org.apache.kafka.streams.processor.ProcessorContext
 

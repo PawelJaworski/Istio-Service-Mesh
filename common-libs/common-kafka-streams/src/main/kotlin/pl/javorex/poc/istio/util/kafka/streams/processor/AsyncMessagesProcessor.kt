@@ -1,11 +1,11 @@
-package pl.javorex.poc.istio.common.kafka.streams.processor
+package pl.javorex.poc.istio.util.kafka.streams.processor
 
 import org.apache.kafka.streams.processor.*
 import org.apache.kafka.streams.state.KeyValueStore
-import pl.javorex.poc.istio.common.kafka.streams.message.addLong
-import pl.javorex.poc.istio.common.kafka.streams.message.addString
-import pl.javorex.poc.istio.common.kafka.streams.message.getLong
-import pl.javorex.poc.istio.common.kafka.streams.message.getString
+import pl.javorex.poc.istio.util.kafka.streams.message.addLong
+import pl.javorex.poc.istio.util.kafka.streams.message.addString
+import pl.javorex.poc.istio.util.kafka.streams.message.getLong
+import pl.javorex.poc.istio.util.kafka.streams.message.getString
 import pl.javorex.poc.istio.common.message.async.AsyncMessagesTemplate
 import pl.javorex.poc.istio.common.message.async.CurrentMessages
 import pl.javorex.poc.istio.common.message.envelope.MessageEnvelope
@@ -18,13 +18,13 @@ const val HEADER_MESSAGE_TYPE = "messageType"
 const val HEADER_TRANSACTION_ID = "transactionId"
 
 class AsyncMessagesProcessor<M>(
-    private val templateSupplier: () -> AsyncMessagesTemplate<M>,
-    private val heartBeatInterval: HeartBeatInterval,
-    private val storeName: String,
-    private val messageCallback: AsyncMessageCallback<M>,
-    private val sinkType: String,
-    private val errorSinkType: String,
-    private val errorTopic: String
+        private val templateSupplier: () -> AsyncMessagesTemplate<M>,
+        private val heartBeatInterval: HeartBeatInterval,
+        private val storeName: String,
+        private val messageCallback: AsyncMessageCallback<M>,
+        private val sinkType: String,
+        private val errorSinkType: String,
+        private val errorTopic: String
 ) : Processor<String, M> {
     private lateinit var store: KeyValueStore<String, CurrentMessages<M>>
     private lateinit var messageBus: ProcessorMessageBus<M>
@@ -34,7 +34,7 @@ class AsyncMessagesProcessor<M>(
         store = context
                 .getStateStore(storeName) as KeyValueStore<String, CurrentMessages<M>>
         messageBus =
-            ProcessorMessageBus(context!!, sinkType, errorSinkType)
+                ProcessorMessageBus(context!!, sinkType, errorSinkType)
         context
                 .schedule(heartBeatInterval.duration, PunctuationType.WALL_CLOCK_TIME, this::doHeartBeat)
     }
