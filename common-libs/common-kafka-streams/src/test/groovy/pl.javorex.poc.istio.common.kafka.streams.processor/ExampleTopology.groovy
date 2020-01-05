@@ -27,8 +27,9 @@ class ExampleTopology {
     final Topology topology
 
     boolean isBCompleted
-    String errorB
+    List<String> errorB = new ArrayList<>()
     boolean isCCompleted
+    List<String> errorC = new ArrayList<>()
 
     static {
         config[StreamsConfig.APPLICATION_ID_CONFIG] = "Create-Loan-Stream"
@@ -102,12 +103,15 @@ class ExampleTopology {
         @Override
         void onFailure(@NotNull String aggregateId, long transactionId, @NotNull String errorCode,
                      @NotNull MessageBus<String> messageBus) {
-            errorB = errorCode
+            String message = "$transactionId.$errorCode"
+            errorB.add(message)
         }
 
         void onTimeout(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages<String> currentMessages, @NotNull MessageBus<String> messageBus) {
             List<String> missingEvents = currentMessages.missing()
-            errorB = "Timeout. Missing: $missingEvents"
+            String message = "Timeout. Missing: $missingEvents"
+            errorB.add(message)
+            messageBus.emitError(sourceId, message)
         }
     }
 
@@ -119,11 +123,15 @@ class ExampleTopology {
         }
 
         void onFailure(@NotNull String key, long transactionId, @NotNull String errorCode, @NotNull MessageBus<String> messageBus) {
-
+            String message = "$transactionId.$errorCode"
+            errorC.add(message)
         }
 
         void onTimeout(@NotNull String sourceId, long sourceVersion, @NotNull CurrentMessages<String> currentMessages, @NotNull MessageBus<String> messageBus) {
-
+            List<String> missingEvents = currentMessages.missing()
+            String message = "Timeout. Missing: $missingEvents"
+            errorC.add(message)
+            messageBus.emitError(sourceId, message)
         }
     }
 }

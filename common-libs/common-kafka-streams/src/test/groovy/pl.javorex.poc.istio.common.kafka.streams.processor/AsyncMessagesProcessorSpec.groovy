@@ -104,9 +104,11 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         testDriver.advanceWallClockTime(Duration.ofMinutes(5))
 
+        println("ErrorB: $testedTopology.errorB")
+        println("ErrorC: $testedTopology.errorC")
         then:
         !testedTopology.isBCompleted
-        testedTopology.errorB == "messaging.failure.runtimeError"
+        testedTopology.errorB == ["1.messaging.failure.runtimeError"]
     }
 
     def "should failed on double message"() {
@@ -128,7 +130,7 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         then:
         !testedTopology.isBCompleted
-        testedTopology.errorB == "messaging.failure.doubleMessage"
+        testedTopology.errorB == ["1.messaging.failure.doubleMessage"]
     }
 
     def "should failed on concurrent modification"(TestRecord<String, MessageEnvelope>[] inputsForA) {
@@ -140,7 +142,7 @@ class AsyncMessagesProcessorSpec extends Specification {
 
         then:
         !testedTopology.isBCompleted
-        testedTopology.errorB == "messaging.failure.concurrentModification"
+        testedTopology.errorB == ["2.messaging.failure.concurrentModification", "1.messaging.failure.concurrentModification"]
 
         where:
         inputsForA << [[

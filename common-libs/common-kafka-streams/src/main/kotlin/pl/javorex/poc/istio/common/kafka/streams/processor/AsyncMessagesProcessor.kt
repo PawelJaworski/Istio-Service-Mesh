@@ -2,6 +2,8 @@ package pl.javorex.poc.istio.common.kafka.streams.processor
 
 import org.apache.kafka.streams.processor.*
 import org.apache.kafka.streams.state.KeyValueStore
+import pl.javorex.poc.istio.common.kafka.streams.message.addLong
+import pl.javorex.poc.istio.common.kafka.streams.message.addString
 import pl.javorex.poc.istio.common.kafka.streams.message.getLong
 import pl.javorex.poc.istio.common.kafka.streams.message.getString
 import pl.javorex.poc.istio.common.message.async.AsyncMessagesTemplate
@@ -68,7 +70,6 @@ class AsyncMessagesProcessor<M>(
             return
         }
 
-
         if (!messaging.expects(messageType)) {
             return
         }
@@ -120,6 +121,8 @@ class AsyncMessagesProcessor<M>(
 
     private fun fireTimeoutEvent(sourceId: String, saga: AsyncMessagesTemplate<M>) {
         val sagaVersion = saga.messagesVersion()
+        context.headers().addLong(HEADER_TRANSACTION_ID, sagaVersion)
+        context.headers().addString(HEADER_MESSAGE_TYPE, "messaging.failure")
         messageCallback.onTimeout(sourceId, sagaVersion, saga.messages(), messageBus)
     }
 
