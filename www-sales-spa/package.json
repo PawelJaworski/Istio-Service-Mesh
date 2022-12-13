@@ -21,7 +21,7 @@
     "@types/react-dom": "16.8.4",
     "@types/react-redux": "7.1.1",
     "@types/react-router-redux": "5.0.18",
-    "express": "4.17.1",
+    "express": "4.17.3",
     "express-http-proxy": "1.5.1",
     "typesafe-actions": "2.0.4"
   },
